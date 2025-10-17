@@ -9,7 +9,7 @@ if [ -f "$GITHUB_WORKSPACE"/GIT-RELEASE ]; then
 	PKGVER="$REF"
 else
 	REF=$(cat "$GITHUB_WORKSPACE"/GIT-COMMIT)
-	PKGVER="$TAG.$REF"
+	PKGVER=$(echo "$TAG.$REF" | tr '-' '.' | tr -d '\n')
 fi
 
 sed "s/%TAG%/$TAG/"       $SRC    > $DEST.1
