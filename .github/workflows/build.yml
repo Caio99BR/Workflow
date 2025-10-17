@@ -58,6 +58,11 @@ jobs:
         run: |
           ./.ci/forgejo.sh --load-payload-env
 
+      - name: Send build status to Forgejo
+        shell: bash
+        run: |
+          python ./.ci/common/status.py start
+
       - name: Clone
         shell: bash
         run: |
@@ -629,3 +634,32 @@ jobs:
         with:
           name: ${{ matrix.os.platform }}-binary-${{ matrix.os.arch }}-${{ matrix.compiler }}
           path: install/Eden-${{ matrix.os.name }}.tar.zst
+
+  status:
+    name: "Status to Forgejo"
+    needs: [linux, windows, android, macos, unix]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Forgejo environment
+        uses: actions/download-artifact@v4
+        with:
+          name: forgejo-env
+
+      - name: Load payload environment
+        shell: bash
+        run: |
+          ./.ci/forgejo.sh --load-payload-env
+
+      - name: Send success status
+        if: ${{ success() }}
+        run: python3 send_status.py success
+
+      - name: Send failure status
+        if: ${{ failure() }}
+        run: python3 send_status.py failure
+
+      - name: Send cancelled status
+        if: ${{ cancelled() }}
+        run: python3 send_status.py cancelled
