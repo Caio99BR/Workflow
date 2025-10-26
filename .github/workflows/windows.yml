@@ -113,8 +113,8 @@ jobs:
           #TODO: Adapt to allow clang-aarch64
           git clone https://git.crueter.xyz/scripts/windev.git .windev
           cd .windev
-          ./install.sh -d || true
-          ./install.sh -d || true
+          ./install.sh -p ci || true
+          ./install.sh -p ci || true
 
       - name: Force Clang 20
         if: matrix.compiler.program == 'clang'
