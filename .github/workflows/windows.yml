@@ -35,11 +35,12 @@ jobs:
           PGO='{"program": "clang", "target": "pgo"}'
           CLANG='{"program": "clang", "target": "standard"}'
           MSVC='{"program": "msvc", "target": "standard"}'
+          MINGW='{"program": "mingw", "target": "standard"}'
 
           if [ "${{ inputs.build-id }}" = "tag" ]; then
-            COMPILER="[${MSVC},${CLANG},${PGO}]"
+            COMPILER="[${MSVC},${CLANG},${PGO},${MINGW}]"
           else
-            COMPILER="[${MSVC},${CLANG}]"
+            COMPILER="[${MSVC},${CLANG},${MINGW}]"
           fi
 
           echo $COMPILER
@@ -55,8 +56,12 @@ jobs:
         os:
           - runs-on: windows-latest
             arch: amd64
+            sys: mingw64
+            env: x86_64
           - runs-on: windows-11-arm
             arch: arm64
+            sys: clangarm64
+            env: clang-aarch64
         compiler: ${{ fromJson(needs.win-matrix.outputs.compiler) }}
 
     env:
@@ -92,6 +97,25 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
 
+      - name: Install MSYS2 environment
+        if: matrix.compiler.program == 'mingw'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.os.sys}}
+          install: >-
+            git
+            dos2unix
+
+      - name: Install necessary MINGW packages
+        if: matrix.compiler.program == 'mingw'
+        shell: msys2 {0}
+        run: |
+          #TODO: Adapt to allow clang-aarch64
+          git clone https://git.crueter.xyz/scripts/windev.git .windev
+          cd .windev
+          ./install.sh -d || true
+          ./install.sh -d || true
+
       - name: Force Clang 20
         if: matrix.compiler.program == 'clang'
         shell: bash
@@ -105,6 +129,15 @@ jobs:
           ./.ci/windows/install-vulkan-sdk.ps1
 
       - name: Configure
+        if: matrix.compiler.program == 'mingw'
+        shell: msys2 {0}
+        run: |
+          git config --global core.autocrlf off
+          dos2unix .patch/boost/*
+          .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
+
+      - name: Configure
+        if: matrix.compiler.program != 'mingw'
         shell: bash
         run: |
           git config --global core.autocrlf off
@@ -112,10 +145,22 @@ jobs:
           .ci/common/configure.sh -DCCACHE_PATH=${SCCACHE_PATH}
 
       - name: Build
+        if: matrix.compiler.program == 'mingw'
+        shell: msys2 {0}
+        run: cmake --build build
+
+      - name: Build
+        if: matrix.compiler.program != 'mingw'
         shell: bash
         run: cmake --build build
 
       - name: Package
+        if: matrix.compiler.program == 'mingw'
+        shell: msys2 {0}
+        run: ./.ci/windows/package.sh
+
+      - name: Package
+        if: matrix.compiler.program != 'mingw'
         shell: bash
         run: ./.ci/windows/package.sh
 
