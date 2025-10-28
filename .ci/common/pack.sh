@@ -3,10 +3,13 @@
 # SPDX-FileCopyrightText: Copyright 2025 Eden Emulator Project
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-mkdir -p artifacts
+ROOTDIR="$PWD"
+ARTIFACTS_DIR="${ROOTDIR}/artifacts"
+
+mkdir -p "$ARTIFACTS_DIR"
 
 ARCHES_DEFAULT="amd64"
-ARCHES_LINUX="steamdeck"
+ARCHES_LINUX="$ARCHES_DEFAULT steamdeck"
 [ "$DISABLE_ARM" != "true" ] && ARCHES_LINUX="$ARCHES_LINUX aarch64"
 
 COMPILERS="gcc"
@@ -15,57 +18,57 @@ if [ "$DEVEL" = "false" ]; then
 	COMPILERS="$COMPILERS clang"
 fi
 
-for arch in $ARCHES_DEFAULT $ARCHES_LINUX; do
+for arch in $ARCHES_LINUX; do
 	for compiler in $COMPILERS; do
 		ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}-standard"
 
-		cp "linux-$arch-$compiler-standard"/*.AppImage "artifacts/$ARTIFACT.AppImage"
+		cp "$ROOTDIR/linux-$arch-$compiler-standard"/*.AppImage "$ARTIFACTS_DIR/$ARTIFACT.AppImage"
 		if [ "$DEVEL" = "false" ]; then
-			cp "linux-$arch-$compiler-standard"/*.AppImage.zsync "artifacts/$ARTIFACT.AppImage.zsync"
+			cp "$ROOTDIR/linux-$arch-$compiler-standard"/*.AppImage.zsync "$ARTIFACTS_DIR/$ARTIFACT.AppImage.zsync"
 		fi
 	done
 
 	if [ "$DEVEL" != "true" ]; then
 		ARTIFACT="Eden-Linux-${ID}-${arch}-clang-pgo"
 
-		cp "linux-$arch-clang-pgo"/*.AppImage.zsync "artifacts/$ARTIFACT.AppImage.zsync"
-		cp "linux-$arch-clang-pgo"/*.AppImage "artifacts/$ARTIFACT.AppImage"
+		cp "$ROOTDIR/linux-$arch-clang-pgo"/*.AppImage.zsync "$ARTIFACTS_DIR/$ARTIFACT.AppImage.zsync"
+		cp "$ROOTDIR/linux-$arch-clang-pgo"/*.AppImage "$ARTIFACTS_DIR/$ARTIFACT.AppImage"
 	fi
 done
 
 FLAVORS=standard
-if [ "$DEVEL" = "false" ]; then
-	FLAVORS="standard legacy optimized"
-fi
+[ "$DEVEL" = "false" ] && FLAVORS="standard legacy optimized"
 
 for flavor in $FLAVORS; do
-	cp android-"$flavor"/*.apk "artifacts/Eden-Android-${ID}-${flavor}.apk"
+	cp "$ROOTDIR/android-$flavor"/*.apk "$ARTIFACTS_DIR/Eden-Android-${ID}-${flavor}.apk"
 done
 
-[ "$DISABLE_ARM" != "true" ] && ARCHES_WINDOWS="arm64"
-for arch in $ARCHES_DEFAULT $ARCHES_WINDOWS; do
+ARCHES_WINDOWS="$ARCHES_DEFAULT"
+[ "$DISABLE_ARM" != "true" ] && ARCHES_WINDOWS="$ARCHES_WINDOWS arm64"
+for arch in $ARCHES_WINDOWS; do
 	for compiler in clang msvc; do
-		cp "windows-$arch-${compiler}-standard"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}-standard.zip"
+		cp "$ROOTDIR/windows-$arch-${compiler}-standard"/*.zip "$ARTIFACTS_DIR/Eden-Windows-${ID}-${arch}-${compiler}-standard.zip"
 	done
 
 	if [ "$DEVEL" != "true" ]; then
-		cp "windows-$arch-clang-pgo"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-clang-pgo.zip"
+		cp "$ROOTDIR/windows-$arch-clang-pgo"/*.zip "$ARTIFACTS_DIR/Eden-Windows-${ID}-${arch}-clang-pgo.zip"
 	fi
 done
 
-if [ -d "source" ]; then
-	cp source/source.tar.zst "artifacts/Eden-Source-${ID}.tar.zst"
+if [ -d "$ROOTDIR/source" ]; then
+	cp "$ROOTDIR/source/source.tar.zst" "$ARTIFACTS_DIR/Eden-Source-${ID}.tar.zst"
 fi
 
-cp -r macos/*.tar.gz "artifacts/Eden-macOS-${ID}.tar.gz"
+cp -r "$ROOTDIR/macos"/*.tar.gz "$ARTIFACTS_DIR/Eden-macOS-${ID}.tar.gz"
 
 # TODO
-cp -r freebsd-binary-amd64-clang/*.tar.zst "artifacts/Eden-FreeBSD-${ID}-amd64-clang.tar.zst"
+cp -r "$ROOTDIR/freebsd-binary-amd64-clang"/*.tar.zst "$ARTIFACTS_DIR/Eden-FreeBSD-${ID}-amd64-clang.tar.zst"
 
-[ "$DISABLE_ARM" != "true" ] && ARCHES_DEBIAN="aarch64"
-for arch in $ARCHES_DEFAULT $ARCHES_DEBIAN; do
+ARCHES_DEBIAN="$ARCHES_DEFAULT"
+[ "$DISABLE_ARM" != "true" ] && ARCHES_DEBIAN="$ARCHES_DEBIAN aarch64"
+for arch in $ARCHES_DEBIAN; do
 	for ver in "Ubuntu-24.04" "Debian-12" "Debian-13"; do
 		pkg_ver=$(echo "$ver" | tr '[:upper:]' '[:lower:]')
-		cp "$pkg_ver-$arch"/eden_*.deb "artifacts/Eden-$ver-${ID}-$arch.deb"
+		cp "$ROOTDIR/$pkg_ver-$arch"/eden_*.deb "$ARTIFACTS_DIR/Eden-$ver-${ID}-$arch.deb"
 	done
 done
