@@ -64,9 +64,8 @@ cp -r freebsd-binary-amd64-clang/*.tar.zst "artifacts/Eden-FreeBSD-${ID}-amd64-c
 
 [ "$DISABLE_ARM" != "true" ] && ARCHES_DEBIAN="aarch64"
 for arch in $ARCHES_DEFAULT $ARCHES_DEBIAN; do
-	cp ubuntu-$arch/*.deb "artifacts/Eden-Ubuntu-24.04-${ID}-$arch.deb"
-
-	for ver in 12 13; do
-		cp debian-$ver-$arch/*.deb "artifacts/Eden-Debian-$ver-${ID}-$arch.deb"
+	for ver in "Ubuntu-24.04" "Debian-12" "Debian-13"; do
+		pkg_ver=$(echo "$ver" | tr '[:upper:]' '[:lower:]')
+		cp "$pkg_ver-$arch"/eden_*.deb "artifacts/Eden-$ver-${ID}-$arch.deb"
 	done
 done
