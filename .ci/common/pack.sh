@@ -5,16 +5,17 @@
 
 mkdir -p artifacts
 
-ARCHES="amd64 steamdeck"
+ARCHES_DEFAULT="amd64"
+ARCHES_LINUX="steamdeck"
+[ "$DISABLE_ARM" != "true" ] && ARCHES_LINUX="$ARCHES_LINUX aarch64"
 
-[ "$DISABLE_ARM" != "true" ] && ARCHES="$ARCHES aarch64"
 COMPILERS="gcc"
 if [ "$DEVEL" = "false" ]; then
-	ARCHES="$ARCHES legacy rog-ally"
+	ARCHES_LINUX="$ARCHES_LINUX legacy rog-ally"
 	COMPILERS="$COMPILERS clang"
 fi
 
-for arch in $ARCHES; do
+for arch in $ARCHES_DEFAULT $ARCHES_LINUX; do
 	for compiler in $COMPILERS; do
 		ARTIFACT="Eden-Linux-${ID}-${arch}-${compiler}-standard"
 
@@ -41,7 +42,8 @@ for flavor in $FLAVORS; do
 	cp android-"$flavor"/*.apk "artifacts/Eden-Android-${ID}-${flavor}.apk"
 done
 
-for arch in amd64 arm64; do
+[ "$DISABLE_ARM" != "true" ] && ARCHES_WINDOWS="arm64"
+for arch in $ARCHES_DEFAULT $ARCHES_WINDOWS; do
 	for compiler in clang msvc; do
 		cp "windows-$arch-${compiler}-standard"/*.zip "artifacts/Eden-Windows-${ID}-${arch}-${compiler}-standard.zip"
 	done
@@ -60,7 +62,8 @@ cp -r macos/*.tar.gz "artifacts/Eden-macOS-${ID}.tar.gz"
 # TODO
 cp -r freebsd-binary-amd64-clang/*.tar.zst "artifacts/Eden-FreeBSD-${ID}-amd64-clang.tar.zst"
 
-for arch in aarch64 amd64; do
+[ "$DISABLE_ARM" != "true" ] && ARCHES_DEBIAN="aarch64"
+for arch in $ARCHES_DEFAULT $ARCHES_DEBIAN; do
 	cp ubuntu-$arch/*.deb "artifacts/Eden-Ubuntu-24.04-${ID}-$arch.deb"
 
 	for ver in 12 13; do
