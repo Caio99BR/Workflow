@@ -9,7 +9,7 @@ ROOTDIR="$PWD"
 BUILDDIR="${ROOTDIR}/${BUILDDIR:-build}"
 ARTIFACTS_DIR="${ROOTDIR}/artifacts"
 
-VERSION=$(cat "$ROOTDIR/GIT-TAG")
+VERSION=$(cat "$ROOTDIR/GIT-TAG" 2>/dev/null || echo 'v0.0.4-rc1')
 PKG_NAME="Eden-${VERSION}-${ARCH}"
 PKG_DIR="install/usr"
 

@@ -39,7 +39,7 @@ else
     strip -s "${BUILDDIR}/bin/"*
 fi
 
-VERSION=$(cat "$ROOTDIR/GIT-TAG" || echo 'v0.0.4-rc1')
+VERSION=$(cat "$ROOTDIR/GIT-TAG" 2>/dev/null || echo 'v0.0.4-rc1')
 echo "Making \"$VERSION\" build"
 
 export OUTNAME="Eden-$VERSION-$FULL_ARCH.AppImage"
