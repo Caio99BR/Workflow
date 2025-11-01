@@ -1,8 +1,8 @@
 [
   {
     "host": "git.eden-emu.dev",
-    "repository": "eden-emu/eden",
-    "branch": "master"
+    "repository": "DraVee/eden",
+    "branch": "test"
   },
   {
     "host": "github.com",
