@@ -71,6 +71,7 @@ jobs:
       COMPILER: "${{ matrix.compiler.program }}"
       PGO_TARGET: "${{ matrix.compiler.target }}"
       ARCH: ${{ matrix.os.arch }}-${{ matrix.compiler.program }}-${{ matrix.compiler.target }}
+      WINDEPLOYQT: "C:/msys64/mingw64/bin/windeployqt.exe"
 
     steps:
       - name: Checkout
