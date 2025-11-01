@@ -17,11 +17,20 @@ set -e
 cp "${BUILDDIR}/bin/"* "${BUILDDIR}/pkg"
 
 if [ "$PLATFORM" = "msys" ]; then
-	echo "-- On MSYS, bundling MinGW DLLs..."
-	# TODO: variable?
-	curl -L -o bundle https://github.com/eden-emulator/mingw-bundledlls/raw/refs/heads/master/mingw-bundledlls
-	chmod a+x bundle
-	./bundle --copy "${BUILDDIR}/pkg/eden.exe"
+    echo "-- On MSYS, bundling MinGW DLLs..."
+    ldd "${BUILDDIR}/pkg/eden.exe" \
+        | grep -iv system32 \
+        | grep -vi windows \
+        | grep -v :$ \
+        | cut -f2 -d\> \
+        | cut -f1 -d\( \
+        | tr '\\' '/' \
+        | while read a; do
+            dst="${BUILDDIR}/pkg/$(basename "$a")"
+            if [ ! -e "$dst" ]; then
+                cp -v "$a" "$dst"
+            fi
+        done
 fi
 
 GITDATE=$(git show -s --date=short --format='%ad' | tr -d "-")
