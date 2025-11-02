@@ -13,7 +13,7 @@ set +e
 rm -f "${BUILDDIR}/bin/"*.pdb
 set -e
 
-"${WINDEPLOYQT}" --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler --dir "${BUILDDIR}/pkg" "${BUILDDIR}/bin/eden.exe"
+"${WINDEPLOYQT}" --release --no-compiler-runtime --no-opengl-sw --no-system-dxc-compiler --no-system-d3d-compiler -force-openssl --dir "${BUILDDIR}/pkg" "${BUILDDIR}/bin/eden.exe"
 cp "${BUILDDIR}/bin/"* "${BUILDDIR}/pkg"
 
 if [ "$PLATFORM" = "msys" ]; then
