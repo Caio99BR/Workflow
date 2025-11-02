@@ -48,20 +48,20 @@ jobs:
   # TODO: setup
   # TODO: once arm64 builds work, combine this with windows.yml
   msys:
-    name: "MSYS2-MinGW64 ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
+    name: "MSYS2-Clang64 ${{ matrix.os.arch }} ${{ matrix.compiler.program }} ${{ matrix.compiler.target }}"
     needs: [msys-matrix]
     runs-on: ${{ matrix.os.runs-on }}
     strategy:
       fail-fast: false
       matrix:
         os:
-          - runs-on: windows-latest
+          - runs-on: windows-2025
             arch: amd64
-            msystem: mingw64
+            msystem: clang64
 
-          # TODO: this requires some cross-comp stuff
-          # - runs-on: ubuntu-24.04-arm
-          #   arch: arm64
+          - runs-on: windows-11-arm
+            arch: arm64
+            msystem: clangarm64
 
         compiler: ${{ fromJson(needs.msys-matrix.outputs.compiler) }}
 
@@ -88,13 +88,12 @@ jobs:
           . ./.ci/fj/load-env.sh
 
       - name: Setup MSYS2
-        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.os.msystem }}
           update: true
           install: >-
-            git make autoconf libtool automake-wrapper patch jq
+            git make autoconf libtool automake-wrapper patch jq pactoys ninja
           pacboy: >-
             qt6-base:p qt6-tools:p qt6-translations:p qt6-svg:p
 
@@ -106,7 +105,7 @@ jobs:
       - name: Configure
         shell: msys2 {0}
         run: |
-          .ci/common/configure.sh -DCCACHE_PATH=sccache
+          .ci/common/configure.sh -DCCACHE_PATH=$(which sccache)
 
       - name: Build
         shell: msys2 {0}
